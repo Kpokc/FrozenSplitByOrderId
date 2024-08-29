@@ -2,6 +2,14 @@
 {
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        string inputFolder = "";
+        string outputFolder = "";
+
+        SplitCsvByOrferId(inputFolder, outputFolder);
+    }
+
+    private static void SplitCsvByOrferId(string inputFolder, string outputFolder)
+    {
+
     }
 }
