@@ -1,5 +1,6 @@
 ﻿using DotNetEnv;
 using System.Text;
+using System.IO;
 
 internal class Program
 {
@@ -7,12 +8,32 @@ internal class Program
     {
         Env.Load("./paths.env");
         string? inputFolder = Environment.GetEnvironmentVariable("INPUTPATH");
-        string? outputFolder = Environment.GetEnvironmentVariable("OUTPUTPATH");
+        string? sorieOutputFolder = Environment.GetEnvironmentVariable("SORIEOUTPUTPATH");
+        string? sorgbOutputFolder = Environment.GetEnvironmentVariable("SORGBOUTPUTPATH");
 
-        await SplitCsvByOrderId(inputFolder, outputFolder);
+        if (!ValidatePaths(inputFolder, sorieOutputFolder, sorgbOutputFolder))
+        {
+            return;
+        }
+
+        await SplitCsvByOrderId(inputFolder, sorieOutputFolder, sorgbOutputFolder);
     }
 
-    private static async Task SplitCsvByOrderId(string? inputFolder, string? outputFolder)
+    private static bool ValidatePaths(string inputFolder, string sorieOutputFolder, string sorgbOutputFolder)
+    {
+        if (!Directory.Exists(inputFolder))
+            return false;
+
+        if (!Directory.Exists(sorieOutputFolder))
+            return false;
+
+        if (!Directory.Exists(sorgbOutputFolder))
+            return false;
+
+        return true;
+    }
+
+    private static async Task SplitCsvByOrderId(string? inputFolder, string? sorieOutputFolder, string? sorgbOutputFolder)
     {
         string[] csvFiles = Directory.GetFiles(inputFolder, "*.csv");
 
@@ -20,8 +41,8 @@ internal class Program
         { 
             string originalFileName = Path.GetFileNameWithoutExtension(csvFile);
 
-            string sorieFilePath = Path.Combine(outputFolder, $"{originalFileName}_SORIE.csv");
-            string sorgbFilePath = Path.Combine(outputFolder, $"{originalFileName}_SORGB.csv");
+            string sorieFilePath = Path.Combine(sorieOutputFolder, $"{originalFileName}_SORIE.csv");
+            string sorgbFilePath = Path.Combine(sorgbOutputFolder, $"{originalFileName}_SORGB.csv");
 
             using (var reader = new StreamReader(csvFile))
             using (var sorieWriter = new StreamWriter(sorieFilePath, false, Encoding.UTF8))
@@ -41,11 +62,11 @@ internal class Program
                     var columns = line.Split(',');
 
                     // Assuming the reference column is the first one (index 0)
-                    if (columns[0].Contains("SORIE"))
+                    if (columns[3].Contains("SORIE"))
                     {
                         await sorieWriter.WriteLineAsync(line);
                     }
-                    else if (columns[0].Contains("SORGB"))
+                    else if (columns[3].Contains("SORGB"))
                     {
                         await sorgbWriter.WriteLineAsync(line);
                     }
