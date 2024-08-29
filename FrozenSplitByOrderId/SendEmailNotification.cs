@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace FrozenSplitByOrderId
 {
-    internal class SendEmailNotification
+    internal class SendEmailNotification : Log
     {
         public static void SendEmail(string subject, string body, string? smtpClientAddrs)
         {
-            //Log.Write_Log("Sending email...");
+            Log.Write_Log($"{subject}\n{body}");
 
             var smtpClient = new SmtpClient(smtpClientAddrs)
             {
@@ -39,11 +39,11 @@ namespace FrozenSplitByOrderId
             try
             {
                 smtpClient.Send(mailMessage);
-                //Log.Write_Log("Email Sent");
+                Log.Write_Log("Email Sent");
             }
             catch (Exception ex)
             {
-                //Log.Write_Log($"Error sending email: {ex.Message}");
+                Log.Write_Log($"Error sending email: {ex.Message}");
             }
         }
 
@@ -64,7 +64,7 @@ namespace FrozenSplitByOrderId
             }
             catch (Exception ex)
             {
-                //Log.Write_Log($"Error reading email recipients from file: {ex.Message}");
+                Log.Write_Log($"Error reading email recipients from file: {ex.Message}");
             }
 
             return recipients;

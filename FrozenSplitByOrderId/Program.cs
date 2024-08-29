@@ -109,7 +109,7 @@ internal class Program : SendEmailNotification
                     else
                     {
                         Console.WriteLine($"Failed to access file {csvFile} after {maxRetries} attempts.");
-                        SendEmail("Failed to access file!", $"Failed to access file {csvFile} after {maxRetries} attempts.", smtpClientAddrs);
+                        //SendEmail("Failed to access file!", $"Failed to access file {csvFile} after {maxRetries} attempts.", smtpClientAddrs);
                         break; // Stop retrying after max attempts
                     }
                 }
