@@ -8,11 +8,10 @@ namespace FrozenSplitByOrderId
 {
     internal class SplitCsvFile: SendEmailNotification
     {
-        public async Task SplitCsvByOrderId(string? inputFolder, string? sorieOutputFolder, string? sorgbOutputFolder, string? smtpClientAddrs)
+        public async Task SplitCsvByOrderId(string[]? csvFiles, string? sorieOutputFolder, string? sorgbOutputFolder, string? smtpClientAddrs)
         {
-            string[] csvFiles = Directory.GetFiles(inputFolder, "*.csv");
 
-            foreach (string csvFile in csvFiles)
+            foreach (string? csvFile in csvFiles)
             {
                 string originalFileName = Path.GetFileNameWithoutExtension(csvFile);
 
@@ -36,7 +35,7 @@ namespace FrozenSplitByOrderId
                             using (var sorieWriter = new StreamWriter(sorieFilePath, false, Encoding.UTF8))
                             using (var sorgbWriter = new StreamWriter(sorgbFilePath, false, Encoding.UTF8))
                             {
-                                string headerLine = await reader.ReadLineAsync();
+                                string? headerLine = await reader.ReadLineAsync();
 
                                 if (headerLine != null)
                                 {
@@ -44,7 +43,7 @@ namespace FrozenSplitByOrderId
                                     await sorgbWriter.WriteLineAsync(headerLine);
                                 }
 
-                                string line;
+                                string? line;
                                 while ((line = await reader.ReadLineAsync()) != null)
                                 {
                                     var columns = line.Split(',');
