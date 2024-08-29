@@ -9,6 +9,7 @@ internal class Program : SendEmailNotification
     {
 
         SplitCsvFile splitCsvFile = new SplitCsvFile();
+        MoveToArchive moveToArchive = new MoveToArchive();
 
         Env.Load("./paths.env");
         string? inputFolder = Environment.GetEnvironmentVariable("INPUTPATH");
@@ -32,35 +33,7 @@ internal class Program : SendEmailNotification
 
         await splitCsvFile.SplitCsvByOrderId(csvFiles, sorieOutputFolder, sorgbOutputFolder, smtpClientAddrs);
 
-        await MoveEdiFilesToArchive(csvFiles, archiveFolder);
-    }
-
-    private static async Task MoveEdiFilesToArchive(string[] csvFiles, string? archiveFolder)
-    {
-        // Create the archive folder if it doesn't exist
-        if (!Directory.Exists(archiveFolder))
-        {
-            Directory.CreateDirectory(archiveFolder);
-        }
-
-        foreach (string csvFile in csvFiles) 
-        { 
-            string archDestFilePath = Path.Combine(archiveFolder, Path.GetFileName(csvFile));
-
-            await MoveEdiFilesToArchive(csvFile, archDestFilePath);
-        }
-    }
-
-    private static async Task MoveEdiFilesToArchive(string csvFile, string archDestFilePath)
-    {
-        await Task.Run(() => 
-        { 
-            if (File.Exists(archDestFilePath)) 
-            { 
-                File.Delete(archDestFilePath);
-            }
-            File.Move(csvFile, archDestFilePath);
-        });
+        await moveToArchive.MoveEdiFilesToArchive(csvFiles, archiveFolder);
     }
 
     private static bool ValidatePaths(string? inputFolder, string? sorieOutputFolder, string? sorgbOutputFolder)
