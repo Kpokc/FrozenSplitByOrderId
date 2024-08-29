@@ -1,15 +1,20 @@
-﻿internal class Program
+﻿using DotNetEnv;
+
+internal class Program
 {
     private static void Main(string[] args)
     {
-        string inputFolder = "";
-        string outputFolder = "";
+        Env.Load("./paths.env");
+        string? inputFolder = Environment.GetEnvironmentVariable("INPUTPATH");
+        string? outputFolder = Environment.GetEnvironmentVariable("OUTPUTPATH");
 
-        SplitCsvByOrferId(inputFolder, outputFolder);
+        SplitCsvByOrderId(inputFolder, outputFolder);
     }
 
-    private static void SplitCsvByOrferId(string inputFolder, string outputFolder)
+    private static void SplitCsvByOrderId(string? inputFolder, string? outputFolder)
     {
-
+        Console.WriteLine(inputFolder);
+        Console.WriteLine(outputFolder);
+        Console.ReadLine();
     }
 }
