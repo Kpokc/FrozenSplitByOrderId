@@ -16,6 +16,8 @@
 		a. Acc 1 subfolder "Archive".
 	4.	Upload existing stockodes from customer Acc 1 to customer Acc 2.
 	5.	Upload address data translation to customer Acc 2.
+	6.	Udate Sftp app - download EDI original file to new destination.
+	7.	Set up Time Scheduler: every 5 minutes.
 
 ### Code requirements
 	1. Check if provided file paths exists, except archive folder. [x]

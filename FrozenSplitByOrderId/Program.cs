@@ -2,11 +2,29 @@
 using System.Text;
 using System.IO;
 using FrozenSplitByOrderId;
+using System.Runtime.InteropServices;
 
 internal class Program : SendEmailNotification
 {
+    // Importing GetConsoleWindow function from kernel32.dll to get the handle to the console window
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetConsoleWindow();
+
+    // Importing ShowWindow function from user32.dll to show or hide the console window
+    [DllImport("user32.dll")]
+    static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    // Constants to specify whether to hide or show the window
+    const int SW_HIDE = 0; // Hides the console window
+    const int SW_SHOW = 5; // Shows the console window
+
     static async Task Main(string[] args)
     {
+        // Get the handle to the current console window
+        IntPtr consoleWindow = GetConsoleWindow();
+        // Hide the console window
+        ShowWindow(consoleWindow, SW_HIDE);
+
         // Create instances of SplitCsvFile and MoveToArchive classes to handle CSV splitting and file archiving
         SplitCsvFile splitCsvFile = new SplitCsvFile();
         MoveToArchive moveToArchive = new MoveToArchive();
