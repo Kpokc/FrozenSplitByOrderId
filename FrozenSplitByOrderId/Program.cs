@@ -44,31 +44,69 @@ internal class Program
             string sorieFilePath = Path.Combine(sorieOutputFolder, $"{originalFileName}_SORIE.csv");
             string sorgbFilePath = Path.Combine(sorgbOutputFolder, $"{originalFileName}_SORGB.csv");
 
-            using (var reader = new StreamReader(csvFile))
-            using (var sorieWriter = new StreamWriter(sorieFilePath, false, Encoding.UTF8))
-            using (var sorgbWriter = new StreamWriter(sorgbFilePath, false, Encoding.UTF8))
+            int maxRetries = 10;
+            int delayBetweenRetries = 2000; // 2 seconds
+            int retryCount = 0;
+            bool fileAccessed = false;
+
+            while (retryCount < maxRetries && !fileAccessed)
             {
-                string headerLine = await reader.ReadLineAsync();
-
-                if (headerLine != null)
+                try
                 {
-                    await sorieWriter.WriteLineAsync(headerLine);
-                    await sorgbWriter.WriteLineAsync(headerLine);
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+                    await Task.Run(async () =>
+                    {
+                        using (var reader = new StreamReader(csvFile))
+                        using (var sorieWriter = new StreamWriter(sorieFilePath, false, Encoding.UTF8))
+                        using (var sorgbWriter = new StreamWriter(sorgbFilePath, false, Encoding.UTF8))
+                        {
+                            string headerLine = await reader.ReadLineAsync();
+
+                            if (headerLine != null)
+                            {
+                                await sorieWriter.WriteLineAsync(headerLine);
+                                await sorgbWriter.WriteLineAsync(headerLine);
+                            }
+
+                            string line;
+                            while ((line = await reader.ReadLineAsync()) != null)
+                            {
+                                var columns = line.Split(',');
+
+                                // Assuming the reference column is the fourth one (index 3)
+                                if (columns[3].Contains("SORIE"))
+                                {
+                                    await sorieWriter.WriteLineAsync(line);
+                                }
+                                else if (columns[3].Contains("SORGB"))
+                                {
+                                    await sorgbWriter.WriteLineAsync(line);
+                                }
+                            }
+                        }
+                    }, cts.Token);
+
+                    fileAccessed = true; // Successfully accessed and processed the file
                 }
-
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
+                catch (OperationCanceledException)
                 {
-                    var columns = line.Split(',');
+                    Console.WriteLine($"Operation timed out while accessing file: {csvFile}");
+                    break; // Stop processing if timeout occurs
+                }
+                catch (IOException ex)
+                {
+                    retryCount++;
+                    Console.WriteLine($"Attempt {retryCount} - File access error for file {csvFile}: {ex.Message}");
 
-                    // Assuming the reference column is the first one (index 0)
-                    if (columns[3].Contains("SORIE"))
+                    if (retryCount < maxRetries)
                     {
-                        await sorieWriter.WriteLineAsync(line);
+                        await Task.Delay(delayBetweenRetries); // Wait before retrying
                     }
-                    else if (columns[3].Contains("SORGB"))
+                    else
                     {
-                        await sorgbWriter.WriteLineAsync(line);
+                        Console.WriteLine($"Failed to access file {csvFile} after {maxRetries} attempts.");
+                        break; // Stop retrying after max attempts
                     }
                 }
             }
