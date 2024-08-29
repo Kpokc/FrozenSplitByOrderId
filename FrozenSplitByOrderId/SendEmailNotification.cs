@@ -12,6 +12,14 @@ namespace FrozenSplitByOrderId
     {
         public static void SendEmail(string subject, string body, string? smtpClientAddrs)
         {
+            if (!string.IsNullOrEmpty(smtpClientAddrs))
+            {
+                // Log the email subject and body to a log file for tracking purposes
+                Log.Write_Log($"{subject}\n{body}");
+                Log.Write_Log("Please provide SMTP server address!");
+                return;
+            }
+                
             // Log the email subject and body to a log file for tracking purposes
             Log.Write_Log($"{subject}\n{body}");
 
