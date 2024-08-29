@@ -11,6 +11,8 @@ namespace FrozenSplitByOrderId
         public async Task MoveEdiFilesToArchive(string[] csvFiles, string? archiveFolder)
         {
             // Create the archive folder if it doesn't exist
+            archiveFolder = archiveFolder is null ? Path.Combine(Path.GetDirectoryName(csvFiles[0]), "Archive") : archiveFolder;
+            
             if (!Directory.Exists(archiveFolder))
             {
                 Directory.CreateDirectory(archiveFolder);
