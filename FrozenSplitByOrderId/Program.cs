@@ -1,8 +1,9 @@
 ﻿using DotNetEnv;
 using System.Text;
 using System.IO;
+using FrozenSplitByOrderId;
 
-internal class Program
+internal class Program : SendEmailNotification
 {
     static async Task Main(string[] args)
     {
@@ -10,13 +11,15 @@ internal class Program
         string? inputFolder = Environment.GetEnvironmentVariable("INPUTPATH");
         string? sorieOutputFolder = Environment.GetEnvironmentVariable("SORIEOUTPUTPATH");
         string? sorgbOutputFolder = Environment.GetEnvironmentVariable("SORGBOUTPUTPATH");
+        string? smtpClientAddrs = Environment.GetEnvironmentVariable("SMTPCLIENT");
 
         if (!ValidatePaths(inputFolder, sorieOutputFolder, sorgbOutputFolder))
         {
+            SendEmail("Error with folder paths!","Please check if correct folder paths are set in app root folder 'paths.env' file!", smtpClientAddrs);
             return;
         }
 
-        await SplitCsvByOrderId(inputFolder, sorieOutputFolder, sorgbOutputFolder);
+        await SplitCsvByOrderId(inputFolder, sorieOutputFolder, sorgbOutputFolder, smtpClientAddrs);
     }
 
     private static bool ValidatePaths(string inputFolder, string sorieOutputFolder, string sorgbOutputFolder)
@@ -33,7 +36,7 @@ internal class Program
         return true;
     }
 
-    private static async Task SplitCsvByOrderId(string? inputFolder, string? sorieOutputFolder, string? sorgbOutputFolder)
+    private static async Task SplitCsvByOrderId(string? inputFolder, string? sorieOutputFolder, string? sorgbOutputFolder, string? smtpClientAddrs)
     {
         string[] csvFiles = Directory.GetFiles(inputFolder, "*.csv");
 
@@ -106,6 +109,7 @@ internal class Program
                     else
                     {
                         Console.WriteLine($"Failed to access file {csvFile} after {maxRetries} attempts.");
+                        SendEmail("Failed to access file!", $"Failed to access file {csvFile} after {maxRetries} attempts.", smtpClientAddrs);
                         break; // Stop retrying after max attempts
                     }
                 }
