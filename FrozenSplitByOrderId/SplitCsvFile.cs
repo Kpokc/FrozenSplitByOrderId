@@ -45,6 +45,9 @@ namespace FrozenSplitByOrderId
                                 // Read and write the header line to both output files
                                 string? headerLine = await reader.ReadLineAsync();
 
+                                bool sorieHasData = false;
+                                bool sorgbHasData = false;
+
                                 if (headerLine != null)
                                 {
                                     await sorieWriter.WriteLineAsync(headerLine);
@@ -58,14 +61,31 @@ namespace FrozenSplitByOrderId
                                     var columns = line.Split(',');
 
                                     // Check the fourth column (index 3) to determine which file the line should be written to
-                                    if (columns[3].Contains("SORIE"))
+                                    if (columns.Length > 3 && columns[3].Contains("SORIE"))
                                     {
                                         await sorieWriter.WriteLineAsync(line); // Write to the SORIE file
+                                        sorieHasData = true; // Mark that SORIE file has data
                                     }
-                                    else if (columns[3].Contains("SORGB"))
+                                    else if (columns.Length > 3 && columns[3].Contains("SORGB"))
                                     {
                                         await sorgbWriter.WriteLineAsync(line); // Write to the SORGB file
+                                        sorgbHasData = true; // Mark that SORGB file has data
                                     }
+                                }
+
+                                // Close the writers first before deleting the files
+                                sorieWriter.Close();
+                                sorgbWriter.Close();
+
+                                // If no data beyond the header was written, delete the output files
+                                if (!sorieHasData && File.Exists(sorieFilePath))
+                                {
+                                    File.Delete(sorieFilePath);
+                                }
+
+                                if (!sorgbHasData && File.Exists(sorgbFilePath))
+                                {
+                                    File.Delete(sorgbFilePath);
                                 }
                             }
                         }, cts.Token); // Pass the cancellation token to the task
